@@ -1,0 +1,9 @@
+export const API_BASE_URL = "https://api.coingecko.com/api/v3/coins/";
+export const ICON_SIZE = 28;
+export const QUERY_PRECISION = 2;
+export const PRICE_CHANGE_PERCENTAGE_7D = "7d";
+export const MARKET_CAP_ORDER = "market_cap_desc";
+export const LOCALE_EN = "en";
+export const CURRENCY_USD = "USD";
+export const MARKETS_ENDPOINT = "markets";
+export const SUCCESS_STATUS_REQUEST_CODE = 200;
