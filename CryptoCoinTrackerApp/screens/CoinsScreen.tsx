@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
   Pressable,
@@ -7,42 +7,72 @@ import {
   View,
   useWindowDimensions,
   Text,
+  RefreshControl,
 } from "react-native";
 
-import { CoinView } from "../components/CoinView/CoinView";
+import { CoinView } from "../../CryptoCoinTrackerApp/components/CoinView/CoinView";
 import { RootStackParamList } from "../navigation/stack/HomeStack";
-import { fetchCoins } from "../store/redux/actions/coinsActions";
+import {
+  fetchCoins,
+  selectCoinID,
+  setPagination,
+} from "../store/redux/actions/coinsActions";
 import {
   RootState,
   useTypedDispatch,
   useTypedSelector,
 } from "../store/redux/store";
-import { Coin } from "../store/redux/types/types";
+import { Coin } from "../types/Coin";
 
 type CoinsScreenProps = NativeStackScreenProps<RootStackParamList, "Coins">;
 
 export function CoinsScreen({ navigation }: CoinsScreenProps) {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   const dispatch = useTypedDispatch();
+
   const { width: screenWidth } = useWindowDimensions();
-  const { coins, loading, error } = useTypedSelector(
+  const { coins, loading, error, pagination } = useTypedSelector(
     (state: RootState) => state.coins,
   );
 
   const renderItem = ({ item }: { item: Coin }) => (
     <Pressable
       onPress={() => {
-        // TODO: Set Selected Coin using dispatch
+        const coinID = item.id;
+        dispatch(selectCoinID(coinID));
         navigation.navigate("Details");
       }}
     >
       <CoinView item={item} />
     </Pressable>
   );
+
+  const handleRefresh = () => {
+    if (isRefreshing) {
+      return;
+    }
+    setIsRefreshing(true);
+    dispatch(fetchCoins(1, pagination.coinsPerPage, []));
+    setIsRefreshing(false);
+  };
+
+  const handleLoadMore = () => {
+    const newPagination = {
+      page: pagination.page + 1,
+      coinsPerPage: pagination.coinsPerPage,
+    };
+    if (pagination.page < newPagination.page + 1) {
+      dispatch(setPagination(newPagination));
+      dispatch(fetchCoins(newPagination.page, newPagination.coinsPerPage, []));
+    }
+  };
+
   const memoizedFetchCoins = useCallback(() => {
     if (!coins) {
-      dispatch(fetchCoins(1, 10, []));
+      dispatch(fetchCoins(pagination.page, pagination.coinsPerPage, []));
     }
-  }, [dispatch, coins]);
+  }, [dispatch, pagination, coins]);
 
   useEffect(() => {
     memoizedFetchCoins();
@@ -50,7 +80,7 @@ export function CoinsScreen({ navigation }: CoinsScreenProps) {
 
   return (
     <View style={styles.container}>
-      {loading ? <Text>{"Loading ... "}</Text> : null}
+      {loading ? <Text>Loading ... </Text> : null}
       {error ? <Text>{error}</Text> : null}
       <FlatList
         data={coins}
@@ -59,6 +89,11 @@ export function CoinsScreen({ navigation }: CoinsScreenProps) {
         contentContainerStyle={{
           width: screenWidth - 40,
         }}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.2}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+        }
       />
     </View>
   );

@@ -1,6 +1,8 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
+import { Button } from "react-native";
 
+import { Icon } from "../../../CryptoCoinTrackerApp/components/Icons/Icon";
 import { FavoritesScreen } from "../../screens/FavoritesScreen";
 
 export type FavStackParamList = {
@@ -21,7 +23,9 @@ export const FavoriteStack = () => {
       <Stack.Screen
         name="Favorites"
         component={FavoritesScreen}
-        options={{ title: "Favorites" }}
+        options={{
+          title: "Favorites",
+        }}
       />
     </Stack.Navigator>
   );

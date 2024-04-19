@@ -5,7 +5,17 @@ import {
   FETCH_COINS_REQUEST,
   FETCH_COINS_REQUEST_FAILURE,
   FETCH_COINS_REQUEST_SUCCESS,
-} from "../../../constants/Coins";
+  FETCH_COIN_DETAILED_DATA,
+  FETCH_COIN_DETAILED_DATA_FAILURE,
+  FETCH_COIN_DETAILED_DATA_SUCCESS,
+  FETCH_COIN_MARKET_CHART_REQUEST,
+  FETCH_COIN_MARKET_CHART_REQUEST_FAILURE,
+  FETCH_COIN_MARKET_CHART_REQUEST_SUCCESS,
+  RESET_COIN_DETAILED_DATA,
+  RESET_COIN_MARKET_CHART,
+  SELECT_COIN_ID,
+  SET_PAGINATION,
+} from "./types/types";
 import {
   API_BASE_URL,
   CURRENCY_USD,
@@ -16,18 +26,35 @@ import {
   QUERY_PRECISION,
   SUCCESS_STATUS_REQUEST_CODE,
 } from "../../../constants/Constants";
-export const fetchCoins =
-  (currentPage: number, coinsPerPage: number, searchTerm: string[]) =>
-  async (dispatch: Dispatch) => {
-    const queryParams = `?ids=${searchTerm}&page=${currentPage}&per_page=${coinsPerPage}&vs_currency=${CURRENCY_USD}&order=${MARKET_CAP_ORDER}&sparkline=${true}&locale=${LOCALE_EN}&price_change_percentage=${PRICE_CHANGE_PERCENTAGE_7D}&precision=${QUERY_PRECISION}`;
-    const coinsURL = `${API_BASE_URL}${MARKETS_ENDPOINT}${queryParams}`;
+import { Pagination } from "../../../types/Pagination";
 
+export const setPagination =
+  (pagination: Pagination) => (dispatch: Dispatch) => {
+    dispatch({
+      type: SET_PAGINATION,
+      payload: pagination,
+    });
+  };
+
+export const selectCoinID = (ID: string) => (dispatch: Dispatch) => {
+  dispatch({
+    type: SELECT_COIN_ID,
+    payload: ID,
+  });
+};
+
+export const fetchCoins =
+  (currentPage: number = 1, coinsPerPage: number, searchTerm: string[]) =>
+  async (dispatch: Dispatch) => {
     dispatch({
       type: FETCH_COINS_REQUEST,
     });
 
+    const queryParams = `?ids=${searchTerm}&page=${currentPage}&per_page=${coinsPerPage}&vs_currency=${CURRENCY_USD}&order=${MARKET_CAP_ORDER}&sparkline=${true}&locale=${LOCALE_EN}&price_change_percentage=${PRICE_CHANGE_PERCENTAGE_7D}&precision=${QUERY_PRECISION}`;
+    const coinsMarketsURL = `${API_BASE_URL}${MARKETS_ENDPOINT}${queryParams}`;
+
     try {
-      const response = await axios.get(coinsURL);
+      const response = await axios.get(coinsMarketsURL);
       if (response.status === SUCCESS_STATUS_REQUEST_CODE && response.data) {
         const coins = response.data;
         dispatch({
@@ -43,6 +70,72 @@ export const fetchCoins =
     }
   };
 
-// TODO: 2 ENDPOINTS
-//https://api.coingecko.com/api/v3/coins/bitcoin/history?date=17-03-2024
-//https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false&market_chart?vs_currency=usd&days=30&interval=daily&precision=2
+export const resetMarketChartData = () => (dispatch: Dispatch) => {
+  dispatch({
+    type: RESET_COIN_MARKET_CHART,
+    payload: null,
+  });
+};
+
+export const resetDetailedData = () => (dispatch: Dispatch) => {
+  dispatch({
+    type: RESET_COIN_DETAILED_DATA,
+    payload: null,
+  });
+};
+
+export const fetchMarketChartByCoinID =
+  (coinID: string) => async (dispatch: Dispatch) => {
+    dispatch({
+      type: FETCH_COIN_MARKET_CHART_REQUEST,
+    });
+
+    // FULL URL => https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily&precision=2
+
+    const queryParams = `/market_chart?vs_currency=usd&days=30&interval=daily&precision=2`;
+    const coinIdURL = `${API_BASE_URL}${coinID}${queryParams}`;
+    try {
+      const response = await axios.get(coinIdURL);
+      if (response.status === SUCCESS_STATUS_REQUEST_CODE && response.data) {
+        const data = response.data;
+        const prices = data.prices;
+        dispatch({
+          type: FETCH_COIN_MARKET_CHART_REQUEST_SUCCESS,
+          payload: prices,
+        });
+      }
+    } catch (error) {
+      dispatch({
+        type: FETCH_COIN_MARKET_CHART_REQUEST_FAILURE,
+        payload: error?.toString(),
+      });
+    }
+  };
+
+export const fetchCoinDetailedData =
+  (coinID: string) => async (dispatch: Dispatch) => {
+    dispatch({
+      type: FETCH_COIN_DETAILED_DATA,
+    });
+
+    // FULL URL => https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false
+
+    const queryParams = `?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`;
+    const coinIdURL = `${API_BASE_URL}${coinID}${queryParams}`;
+    try {
+      const response = await axios.get(coinIdURL);
+      if (response.status === SUCCESS_STATUS_REQUEST_CODE && response.data) {
+        const data = response.data;
+        const marketData = data.market_data;
+        dispatch({
+          type: FETCH_COIN_DETAILED_DATA_SUCCESS,
+          payload: marketData,
+        });
+      }
+    } catch (error) {
+      dispatch({
+        type: FETCH_COIN_DETAILED_DATA_FAILURE,
+        payload: error?.toString(),
+      });
+    }
+  };

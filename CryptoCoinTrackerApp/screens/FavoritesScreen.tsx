@@ -1,6 +1,11 @@
 import { StyleSheet, View } from "react-native";
 
+import { RootState, useTypedSelector } from "../store/redux/store";
+
 export function FavoritesScreen() {
+  const favoriteCoins = useTypedSelector(
+    (state: RootState) => state.favorites.favoriteCoins,
+  );
   return (
     <View style={styles.container}>
       <View style={styles.separator} />

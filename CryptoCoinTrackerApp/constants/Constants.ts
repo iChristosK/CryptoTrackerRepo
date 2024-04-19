@@ -7,3 +7,4 @@ export const LOCALE_EN = "en";
 export const CURRENCY_USD = "USD";
 export const MARKETS_ENDPOINT = "markets";
 export const SUCCESS_STATUS_REQUEST_CODE = 200;
+export const TOAST_PLACEMENT = "bottom";

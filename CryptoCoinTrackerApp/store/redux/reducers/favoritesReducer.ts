@@ -1,23 +1,44 @@
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { MARK_FAVORITE, UNMARK_FAVORITE } from "../actions/types/types";
 
-import { Coin } from "../types/types";
+interface FavoritesState {
+  favoriteCoins: string[];
+}
 
-const favoritesSlice = createSlice({
-  name: "favorites",
-  initialState: {
-    coins: [] as Coin[],
-  },
+const initialState: FavoritesState = {
+  favoriteCoins: [] as string[],
+};
 
-  reducers: {
-    addFavorite: (state, action: PayloadAction<Coin>) => {
-      state.coins.push(action.payload);
-    },
-    removeFavorite: (state, action) => {
-      state.coins.splice(state.coins.indexOf(action.payload.id), 1);
-    },
-  },
-});
+interface MarkFavorite {
+  type: typeof MARK_FAVORITE;
+  payload: string;
+}
+interface UnmarkFavorite {
+  type: typeof UNMARK_FAVORITE;
+  payload: string;
+}
 
-export const addFavorite = favoritesSlice.actions.addFavorite;
-export const removeFavorite = favoritesSlice.actions.removeFavorite;
-export const favoritesReducer = favoritesSlice.reducer;
+type FavoriteReducerAction = MarkFavorite | UnmarkFavorite;
+
+export function favoritesReducer(
+  state = initialState,
+  action: FavoriteReducerAction,
+) {
+  switch (action.type) {
+    case MARK_FAVORITE: {
+      return {
+        ...state,
+        favoriteCoins: [...state.favoriteCoins, action.payload],
+      };
+    }
+    case UNMARK_FAVORITE: {
+      return {
+        ...state,
+        favoriteCoins: {
+          ...state.favoriteCoins.filter((coinID) => coinID !== action.payload),
+        },
+      };
+    }
+    default:
+      return state;
+  }
+}
