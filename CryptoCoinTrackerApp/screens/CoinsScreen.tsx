@@ -117,3 +117,10 @@ const styles = StyleSheet.create({
     padding: 10,
   },
 });
+
+/**
+ * Implements handleLoadMore function to load more coins when reaching the end of the list.
+Uses useCallback and useEffect hooks to memoize and execute fetching coins action.
+Renders a view with a search bar, loading/error indicators, and a FlatList to display coins.
+Configures FlatList with necessary props like data source, rendering function, key extractor, content container style, and refresh control.
+ */

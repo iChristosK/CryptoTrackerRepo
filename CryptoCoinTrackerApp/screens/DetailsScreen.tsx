@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo } from "react";
 import {
   StyleSheet,
   View,
@@ -9,6 +9,7 @@ import {
   FlatList,
 } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
+import { useToast } from "react-native-toast-notifications";
 
 import { Icon } from "../../CryptoCoinTrackerApp/components/Icons/Icon";
 import { RootStackParamList } from "../navigation/stack/HomeStack";
@@ -18,7 +19,10 @@ import {
   resetDetailedData,
   resetMarketChartData,
 } from "../store/redux/actions/coinsActions";
-import { markFavorite } from "../store/redux/actions/favoriteActions";
+import {
+  markFavorite,
+  unmarkFavorite,
+} from "../store/redux/actions/favoriteActions";
 import {
   RootState,
   useTypedDispatch,
@@ -32,6 +36,7 @@ type DetailedSreenProps = NativeStackScreenProps<RootStackParamList, "Details">;
 export function DetailsScreen({ navigation }: DetailedSreenProps) {
   const dispatch = useTypedDispatch();
   const { width: screenWidth } = useWindowDimensions();
+  const toast = useToast();
 
   const {
     coinID,
@@ -42,6 +47,11 @@ export function DetailsScreen({ navigation }: DetailedSreenProps) {
     detailedError,
     detailedLoading,
   } = useTypedSelector((state: RootState) => state.coins);
+  const { favoriteCoins } = useTypedSelector(
+    (state: RootState) => state.favorites,
+  );
+  const coinIsFavorite = favoriteCoins.includes(coinID ?? "");
+  const iconName = coinIsFavorite ? "star" : "star-o";
 
   const memoizedFetchMarketChart = useCallback(() => {
     if (!coinChartData && coinID) {
@@ -54,6 +64,36 @@ export function DetailsScreen({ navigation }: DetailedSreenProps) {
       dispatch(fetchCoinDetailedData(coinID));
     }
   }, [dispatch, coinID, coinDetailedData]);
+
+  const changeFavoriteHandler = useCallback(() => {
+    if (!coinID) {
+      return null;
+    }
+    if (coinIsFavorite) {
+      toast.show("This coin is now removed from your favorites tab.", {
+        type: "danger",
+      });
+      dispatch(unmarkFavorite(coinID));
+    } else {
+      toast.show("This coin is now saved in your favorites tab.", {
+        type: "success",
+        style: { borderRadius: 15 },
+      });
+      dispatch(markFavorite(coinID));
+    }
+  }, [toast, coinIsFavorite, coinID, dispatch]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => {
+        return (
+          <Pressable onPress={() => changeFavoriteHandler}>
+            <Icon name={iconName} color="gray" />
+          </Pressable>
+        );
+      },
+    });
+  }, [coinIsFavorite, iconName, changeFavoriteHandler, navigation]);
 
   const memoizedFavoriteCoins = useCallback(() => {
     if (coinID) {
@@ -268,3 +308,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+/**
+ * Uses useCallback and useEffect hooks to memoize and execute fetching actions for market chart data, detailed coin data, and favorite coins.
+Utilizes useMemo hook to memoize derived data from coin details and chart data.
+Implements a renderItem function to render details in a list format.
+Conditionally renders loading/error indicators and chart components based on state.
+Renders detailed coin information including line chart, market data, current prices, total volume, all-time high, all-time low, circulating supply, and total supply.
+ */

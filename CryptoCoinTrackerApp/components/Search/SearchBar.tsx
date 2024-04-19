@@ -17,11 +17,8 @@ interface SearchBarProps {
 }
 export const SearchBar = (props: SearchBarProps) => {
   const dispatch = useTypedDispatch();
-  const { pagination, coins } = useTypedSelector(
-    (state: RootState) => state.coins,
-  );
+  const { pagination } = useTypedSelector((state: RootState) => state.coins);
 
-  console.log("coins", coins?.length);
   return (
     <View style={styles.container}>
       <View
@@ -53,6 +50,7 @@ export const SearchBar = (props: SearchBarProps) => {
             );
           }}
           onFocus={() => {
+            dispatch(resetCoins());
             props.setClicked(true);
           }}
         />
@@ -115,3 +113,11 @@ const styles = StyleSheet.create({
     width: "90%",
   },
 });
+
+/**
+ * Retrieves pagination data from the Redux store using custom hooks useTypedSelector.
+Renders a search bar with an icon, input field, and cancel button.
+Handles text input and search functionality using TextInput component.
+Dispatches actions to reset coins and fetch new coins based on search input and pagination.
+Displays a cancel button when the search bar is clicked, allowing users to dismiss the keyboard and cancel the search.
+ */
