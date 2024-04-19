@@ -228,7 +228,7 @@ export function DetailsScreen({ navigation }: DetailedSreenProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "light",
+    backgroundColor: "lightgray",
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -251,7 +251,6 @@ const styles = StyleSheet.create({
   flatListLabel: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "light",
   },
   item: {
     flexDirection: "row",

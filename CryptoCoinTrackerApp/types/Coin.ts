@@ -41,6 +41,10 @@ export interface DetailedCoin {
   tickers?: Ticker[];
 }
 
+export interface SearchCoin {
+  term: string;
+  clicked: boolean;
+}
 export interface CommunityData {
   facebook_likes?: null;
   twitter_followers?: number;

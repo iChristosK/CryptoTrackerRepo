@@ -10,6 +10,7 @@ import {
   FETCH_COIN_MARKET_CHART_REQUEST,
   FETCH_COIN_MARKET_CHART_REQUEST_FAILURE,
   FETCH_COIN_MARKET_CHART_REQUEST_SUCCESS,
+  RESET_COINS,
   RESET_COIN_DETAILED_DATA,
   RESET_COIN_MARKET_CHART,
   SELECT_COIN_ID,
@@ -50,6 +51,10 @@ const initialState: CoinsState = {
 interface ResetMarketChartData {
   type: typeof RESET_COIN_MARKET_CHART;
   payload: null;
+}
+
+interface ResetCoins {
+  type: typeof RESET_COINS;
 }
 
 interface ResetDetailedData {
@@ -110,6 +115,7 @@ interface FetchCoinDetailedDataRequestFailure {
 }
 
 type CoinsReducerAction =
+  | ResetCoins
   | ResetDetailedData
   | ResetMarketChartData
   | SetPagination
@@ -126,6 +132,9 @@ type CoinsReducerAction =
 
 export function coinsReducer(state = initialState, action: CoinsReducerAction) {
   switch (action.type) {
+    case RESET_COINS: {
+      return { ...state, coins: initialState.coins };
+    }
     case RESET_COIN_MARKET_CHART: {
       return { ...state, coinChartData: action.payload };
     }

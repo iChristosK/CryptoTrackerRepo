@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import { CoinView } from "../../CryptoCoinTrackerApp/components/CoinView/CoinView";
+import { SearchBar } from "../components/Search/SearchBar";
 import { RootStackParamList } from "../navigation/stack/HomeStack";
 import {
   fetchCoins,
@@ -28,7 +29,8 @@ type CoinsScreenProps = NativeStackScreenProps<RootStackParamList, "Coins">;
 
 export function CoinsScreen({ navigation }: CoinsScreenProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
-
+  const [searchPhrase, setSearchPhrase] = useState("");
+  const [clicked, setClicked] = useState(false);
   const dispatch = useTypedDispatch();
 
   const { width: screenWidth } = useWindowDimensions();
@@ -53,7 +55,7 @@ export function CoinsScreen({ navigation }: CoinsScreenProps) {
       return;
     }
     setIsRefreshing(true);
-    dispatch(fetchCoins(1, pagination.coinsPerPage, []));
+    dispatch(fetchCoins(1, pagination.coinsPerPage, searchPhrase));
     setIsRefreshing(false);
   };
 
@@ -64,15 +66,17 @@ export function CoinsScreen({ navigation }: CoinsScreenProps) {
     };
     if (pagination.page < newPagination.page + 1) {
       dispatch(setPagination(newPagination));
-      dispatch(fetchCoins(newPagination.page, newPagination.coinsPerPage, []));
+      fetchCoins(newPagination.page, pagination.coinsPerPage, searchPhrase);
     }
   };
 
   const memoizedFetchCoins = useCallback(() => {
     if (!coins) {
-      dispatch(fetchCoins(pagination.page, pagination.coinsPerPage, []));
+      dispatch(
+        fetchCoins(pagination.page, pagination.coinsPerPage, searchPhrase),
+      );
     }
-  }, [dispatch, pagination, coins]);
+  }, [dispatch, pagination, coins, searchPhrase]);
 
   useEffect(() => {
     memoizedFetchCoins();
@@ -80,6 +84,12 @@ export function CoinsScreen({ navigation }: CoinsScreenProps) {
 
   return (
     <View style={styles.container}>
+      <SearchBar
+        searchPhrase={searchPhrase}
+        clicked={clicked}
+        setSearchPhrase={setSearchPhrase}
+        setClicked={setClicked}
+      />
       {loading ? <Text>Loading ... </Text> : null}
       {error ? <Text>{error}</Text> : null}
       <FlatList

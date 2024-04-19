@@ -11,6 +11,7 @@ import {
   FETCH_COIN_MARKET_CHART_REQUEST,
   FETCH_COIN_MARKET_CHART_REQUEST_FAILURE,
   FETCH_COIN_MARKET_CHART_REQUEST_SUCCESS,
+  RESET_COINS,
   RESET_COIN_DETAILED_DATA,
   RESET_COIN_MARKET_CHART,
   SELECT_COIN_ID,
@@ -44,17 +45,19 @@ export const selectCoinID = (ID: string) => (dispatch: Dispatch) => {
 };
 
 export const fetchCoins =
-  (currentPage: number = 1, coinsPerPage: number, searchTerm: string[]) =>
+  (currentPage: number = 1, coinsPerPage: number, searchTerm: string) =>
   async (dispatch: Dispatch) => {
     dispatch({
       type: FETCH_COINS_REQUEST,
     });
 
-    const queryParams = `?ids=${searchTerm}&page=${currentPage}&per_page=${coinsPerPage}&vs_currency=${CURRENCY_USD}&order=${MARKET_CAP_ORDER}&sparkline=${true}&locale=${LOCALE_EN}&price_change_percentage=${PRICE_CHANGE_PERCENTAGE_7D}&precision=${QUERY_PRECISION}`;
+    const queryParams = `?vs_currency=${CURRENCY_USD}&ids=${searchTerm}&page=${currentPage}&per_page=${coinsPerPage}&order=${MARKET_CAP_ORDER}&sparkline=${false}&locale=${LOCALE_EN}&price_change_percentage=${PRICE_CHANGE_PERCENTAGE_7D}&precision=${QUERY_PRECISION}`;
     const coinsMarketsURL = `${API_BASE_URL}${MARKETS_ENDPOINT}${queryParams}`;
 
+    //api.coingecko.com/api/v3/coins/markets?ids=bitcoin&page=1&per_page=0&vs_currency=USD&order=market_cap_desc&sparkline=true&locale=en&price_change_percentage=7d&precision=2
     try {
       const response = await axios.get(coinsMarketsURL);
+
       if (response.status === SUCCESS_STATUS_REQUEST_CODE && response.data) {
         const coins = response.data;
         dispatch({
@@ -81,6 +84,12 @@ export const resetDetailedData = () => (dispatch: Dispatch) => {
   dispatch({
     type: RESET_COIN_DETAILED_DATA,
     payload: null,
+  });
+};
+
+export const resetCoins = () => (dispatch: Dispatch) => {
+  dispatch({
+    type: RESET_COINS,
   });
 };
 
