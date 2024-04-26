@@ -15,7 +15,8 @@ import { SearchBar } from "../components/Search/SearchBar";
 import { RootStackParamList } from "../navigation/stack/HomeStack";
 import {
   fetchCoins,
-  selectCoinID,
+  resetCoins,
+  selectCoin,
   setPagination,
 } from "../store/redux/actions/coinsActions";
 import {
@@ -37,12 +38,11 @@ export function CoinsScreen({ navigation }: CoinsScreenProps) {
   const { coins, loading, error, pagination } = useTypedSelector(
     (state: RootState) => state.coins,
   );
-
   const renderItem = ({ item }: { item: Coin }) => (
     <Pressable
       onPress={() => {
-        const coinID = item.id;
-        dispatch(selectCoinID(coinID));
+        const coin = item;
+        dispatch(selectCoin(coin));
         navigation.navigate("Details");
       }}
     >
@@ -55,6 +55,7 @@ export function CoinsScreen({ navigation }: CoinsScreenProps) {
       return;
     }
     setIsRefreshing(true);
+    dispatch(resetCoins());
     dispatch(fetchCoins(1, pagination.coinsPerPage, searchPhrase));
     setIsRefreshing(false);
   };
@@ -82,6 +83,30 @@ export function CoinsScreen({ navigation }: CoinsScreenProps) {
     memoizedFetchCoins();
   }, [memoizedFetchCoins]);
 
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text>{error}</Text>
+      </View>
+    );
+  }
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading ...</Text>
+      </View>
+    );
+  }
+
+  if (!coins) {
+    return (
+      <View style={styles.container}>
+        <Text> No coins found </Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <SearchBar
@@ -90,8 +115,6 @@ export function CoinsScreen({ navigation }: CoinsScreenProps) {
         setSearchPhrase={setSearchPhrase}
         setClicked={setClicked}
       />
-      {loading ? <Text>Loading ... </Text> : null}
-      {error ? <Text>{error}</Text> : null}
       <FlatList
         data={coins}
         renderItem={renderItem}
@@ -100,7 +123,7 @@ export function CoinsScreen({ navigation }: CoinsScreenProps) {
           width: screenWidth - 40,
         }}
         onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.2}
+        onEndReachedThreshold={0.3}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
         }

@@ -14,7 +14,7 @@ import {
   RESET_COINS,
   RESET_COIN_DETAILED_DATA,
   RESET_COIN_MARKET_CHART,
-  SELECT_COIN_ID,
+  SELECT_COIN,
   SET_PAGINATION,
 } from "./types/types";
 import {
@@ -27,6 +27,7 @@ import {
   QUERY_PRECISION,
   SUCCESS_STATUS_REQUEST_CODE,
 } from "../../../constants/Constants";
+import { Coin } from "../../../types/Coin";
 import { Pagination } from "../../../types/Pagination";
 
 export const setPagination =
@@ -37,10 +38,10 @@ export const setPagination =
     });
   };
 
-export const selectCoinID = (ID: string) => (dispatch: Dispatch) => {
+export const selectCoin = (coin: Coin) => (dispatch: Dispatch) => {
   dispatch({
-    type: SELECT_COIN_ID,
-    payload: ID,
+    type: SELECT_COIN,
+    payload: coin,
   });
 };
 
@@ -76,14 +77,12 @@ export const fetchCoins =
 export const resetMarketChartData = () => (dispatch: Dispatch) => {
   dispatch({
     type: RESET_COIN_MARKET_CHART,
-    payload: null,
   });
 };
 
 export const resetDetailedData = () => (dispatch: Dispatch) => {
   dispatch({
     type: RESET_COIN_DETAILED_DATA,
-    payload: null,
   });
 };
 

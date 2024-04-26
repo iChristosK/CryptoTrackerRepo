@@ -29,31 +29,31 @@ export const TabNavigator = () => {
           offsetTop={30}
           offsetBottom={40}
           swipeEnabled
-          children={undefined}
-        />
-        <NavigationContainer>
-          <StatusBarContainer barStyle="default" />
-          <Tab.Navigator>
-            <Tab.Screen
-              name="Home"
-              component={HomeStack}
-              options={{
-                headerShown: false,
-                tabBarIcon: ({ color }) => (
-                  <Icon name="bitcoin" color={color} />
-                ),
-              }}
-            />
-            <Tab.Screen
-              name="Favorite"
-              component={FavoriteStack}
-              options={{
-                headerShown: false,
-                tabBarIcon: ({ color }) => <Icon name="star" color={color} />,
-              }}
-            />
-          </Tab.Navigator>
-        </NavigationContainer>
+        >
+          <NavigationContainer>
+            <StatusBarContainer barStyle="default" />
+            <Tab.Navigator>
+              <Tab.Screen
+                name="Home"
+                component={HomeStack}
+                options={{
+                  headerShown: false,
+                  tabBarIcon: ({ color }) => (
+                    <Icon name="bitcoin" color={color} />
+                  ),
+                }}
+              />
+              <Tab.Screen
+                name="Favorite"
+                component={FavoriteStack}
+                options={{
+                  headerShown: false,
+                  tabBarIcon: ({ color }) => <Icon name="star" color={color} />,
+                }}
+              />
+            </Tab.Navigator>
+          </NavigationContainer>
+        </ToastProvider>
       </SafeAreaProvider>
     </Provider>
   );
