@@ -49,6 +49,7 @@ export const SearchBar = (props: SearchBarProps) => {
           <Button
             title="Cancel"
             onPress={() => {
+              dispatch(resetCoins());
               dispatch(fetchCoins(1, 100, ""));
               props.setSearchPhrase("");
               Keyboard.dismiss();
