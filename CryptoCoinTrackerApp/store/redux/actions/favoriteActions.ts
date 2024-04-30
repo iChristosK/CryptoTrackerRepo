@@ -1,11 +1,12 @@
 import { Dispatch } from "redux";
 
 import { MARK_FAVORITE, UNMARK_FAVORITE } from "./types/types";
+import { Coin } from "../../../types/Coin";
 
-export const markFavorite = (coinID: string) => (dispatch: Dispatch) => {
+export const markFavorite = (coin: Coin) => (dispatch: Dispatch) => {
   dispatch({
     type: MARK_FAVORITE,
-    payload: coinID,
+    payload: coin,
   });
 };
 

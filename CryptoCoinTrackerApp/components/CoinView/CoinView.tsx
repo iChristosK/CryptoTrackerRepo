@@ -1,6 +1,6 @@
 import { StyleSheet, View, Text, Image } from "react-native";
 
-import { Coin } from "../../../src/store/redux/types/types";
+import { Coin } from "../../types/Coin";
 
 interface CoinViewProps {
   item: Coin;

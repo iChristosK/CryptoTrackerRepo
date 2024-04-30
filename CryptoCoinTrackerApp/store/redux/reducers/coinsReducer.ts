@@ -13,12 +13,12 @@ import {
   RESET_COINS,
   RESET_COIN_DETAILED_DATA,
   RESET_COIN_MARKET_CHART,
-  SELECT_COIN_ID,
+  SELECT_COIN,
   SET_PAGINATION,
 } from "../actions/types/types";
 
 interface CoinsState {
-  coinID: string | null;
+  coin: Coin | null;
   coins: Coin[] | null;
   loading: boolean;
   error: string | null;
@@ -32,7 +32,7 @@ interface CoinsState {
 }
 
 const initialState: CoinsState = {
-  coinID: null,
+  coin: null,
   coins: null,
   loading: false,
   error: null,
@@ -50,7 +50,6 @@ const initialState: CoinsState = {
 
 interface ResetMarketChartData {
   type: typeof RESET_COIN_MARKET_CHART;
-  payload: null;
 }
 
 interface ResetCoins {
@@ -59,7 +58,6 @@ interface ResetCoins {
 
 interface ResetDetailedData {
   type: typeof RESET_COIN_DETAILED_DATA;
-  payload: null;
 }
 
 interface SetPagination {
@@ -67,9 +65,9 @@ interface SetPagination {
   payload: Pagination;
 }
 
-interface SelectCoinID {
-  type: typeof SELECT_COIN_ID;
-  payload: string;
+interface SelectCoin {
+  type: typeof SELECT_COIN;
+  payload: Coin;
 }
 
 interface FetchCoinsRequest {
@@ -119,7 +117,7 @@ type CoinsReducerAction =
   | ResetDetailedData
   | ResetMarketChartData
   | SetPagination
-  | SelectCoinID
+  | SelectCoin
   | FetchCoinsRequest
   | FetchCoinsRequestSuccess
   | FetchCoinsRequestFailure
@@ -133,28 +131,43 @@ type CoinsReducerAction =
 export function coinsReducer(state = initialState, action: CoinsReducerAction) {
   switch (action.type) {
     case RESET_COINS: {
-      return { ...state, coins: initialState.coins };
+      const stateCoins = [...(state.coins ?? [])];
+      stateCoins.splice(0, stateCoins.length);
+      return { ...state, coins: stateCoins };
     }
     case RESET_COIN_MARKET_CHART: {
-      return { ...state, coinChartData: action.payload };
+      if (state.coinChartData) {
+        const newCoinsMarketData = null;
+        return { ...state, coinChartData: newCoinsMarketData };
+      }
+      return { ...state };
     }
     case RESET_COIN_DETAILED_DATA: {
-      return { ...state, coinDetailedData: action.payload };
+      if (state.coinDetailedData) {
+        const newCoinsDetailedData = null;
+        return { ...state, coinDetailedData: newCoinsDetailedData };
+      }
+      return { ...state };
     }
     case SET_PAGINATION: {
       return { ...state, pagination: action.payload };
     }
-    case SELECT_COIN_ID:
-      return { ...state, coinID: action.payload };
+    case SELECT_COIN:
+      return { ...state, coin: action.payload };
     case FETCH_COINS_REQUEST:
       return { ...state, loading: true, error: null };
-    case FETCH_COINS_REQUEST_SUCCESS:
+    case FETCH_COINS_REQUEST_SUCCESS: {
+      const stateCoins = [...(state.coins ?? [])];
+      const newCoins = action.payload.filter(
+        (coin) => !stateCoins.includes(coin),
+      );
       return {
         ...state,
-        coins: [...(state.coins ?? []), ...action.payload],
+        coins: [...stateCoins, ...newCoins],
         loading: false,
         error: null,
       };
+    }
     case FETCH_COINS_REQUEST_FAILURE:
       return { ...state, error: action.payload, loading: false };
     case FETCH_COIN_DETAILED_DATA:

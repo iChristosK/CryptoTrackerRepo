@@ -1,13 +1,9 @@
-import { Feather, Entypo } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, TextInput, View, Keyboard, Button } from "react-native";
 
 import { fetchCoins, resetCoins } from "../../store/redux/actions/coinsActions";
-import {
-  RootState,
-  useTypedDispatch,
-  useTypedSelector,
-} from "../../store/redux/store";
+import { useTypedDispatch } from "../../store/redux/store";
 
 interface SearchBarProps {
   searchPhrase: string;
@@ -17,8 +13,6 @@ interface SearchBarProps {
 }
 export const SearchBar = (props: SearchBarProps) => {
   const dispatch = useTypedDispatch();
-  const { pagination } = useTypedSelector((state: RootState) => state.coins);
-
   return (
     <View style={styles.container}>
       <View
@@ -39,39 +33,25 @@ export const SearchBar = (props: SearchBarProps) => {
           placeholder="Search"
           value={props.searchPhrase}
           onChangeText={(text) => props.setSearchPhrase(text)}
-          onSubmitEditing={() => {
+          onResponderStart={() => {
             dispatch(resetCoins());
-            dispatch(
-              fetchCoins(
-                pagination.page,
-                pagination.coinsPerPage,
-                props.searchPhrase,
-              ),
-            );
+          }}
+          onSubmitEditing={() => {
+            dispatch(fetchCoins(1, 1, props.searchPhrase));
           }}
           onFocus={() => {
-            dispatch(resetCoins());
             props.setClicked(true);
           }}
         />
-
-        {props.clicked && (
-          <Entypo
-            name="cross"
-            size={20}
-            color="black"
-            style={{ padding: 1 }}
-            onPress={() => {
-              props.setSearchPhrase("");
-            }}
-          />
-        )}
       </View>
       {props.clicked && (
         <View>
           <Button
             title="Cancel"
             onPress={() => {
+              dispatch(resetCoins());
+              dispatch(fetchCoins(1, 100, ""));
+              props.setSearchPhrase("");
               Keyboard.dismiss();
               props.setClicked(false);
             }}

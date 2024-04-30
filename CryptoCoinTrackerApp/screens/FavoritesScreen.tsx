@@ -1,4 +1,10 @@
-import { FlatList, useWindowDimensions } from "react-native";
+import {
+  FlatList,
+  useWindowDimensions,
+  Text,
+  StyleSheet,
+  View,
+} from "react-native";
 
 import { CoinView } from "../../CryptoCoinTrackerApp/components/CoinView/CoinView";
 import { RootState, useTypedSelector } from "../store/redux/store";
@@ -9,19 +15,29 @@ export function FavoritesScreen() {
   const favoriteCoins = useTypedSelector(
     (state: RootState) => state.favorites.favoriteCoins,
   );
-  const coins = useTypedSelector((state: RootState) => state.coins.coins);
-  if (!coins) {
-    return null;
-  }
-  const filteredCoins = coins.filter((favorite) =>
-    favoriteCoins.includes(favorite.id),
-  );
+  const { error } = useTypedSelector((state: RootState) => state.coins);
 
   const renderItem = ({ item }: { item: Coin }) => <CoinView item={item} />;
 
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text> {error} </Text>
+      </View>
+    );
+  }
+
+  if (favoriteCoins.length === 0) {
+    return (
+      <View style={styles.container}>
+        <Text> No favorite coins </Text>
+      </View>
+    );
+  }
+
   return (
     <FlatList
-      data={filteredCoins}
+      data={favoriteCoins}
       renderItem={renderItem}
       keyExtractor={(item) => item.id}
       contentContainerStyle={{
@@ -31,9 +47,11 @@ export function FavoritesScreen() {
   );
 }
 
-/**
- * Implements handleLoadMore function to load more coins when reaching the end of the list.
-Uses useCallback and useEffect hooks to memoize and execute fetching coins action.
-Renders a view with a search bar, loading/error indicators, and a FlatList to display coins.
-Configures FlatList with necessary props like data source, rendering function, key extractor, content container style, and refresh control.
- */
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 10,
+  },
+});

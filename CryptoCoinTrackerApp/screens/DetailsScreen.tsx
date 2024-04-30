@@ -37,9 +37,8 @@ export function DetailsScreen({ navigation }: DetailedSreenProps) {
   const dispatch = useTypedDispatch();
   const { width: screenWidth } = useWindowDimensions();
   const toast = useToast();
-
   const {
-    coinID,
+    coin,
     coinChartData,
     coinDetailedData,
     chartError,
@@ -50,8 +49,21 @@ export function DetailsScreen({ navigation }: DetailedSreenProps) {
   const { favoriteCoins } = useTypedSelector(
     (state: RootState) => state.favorites,
   );
-  const coinIsFavorite = favoriteCoins.includes(coinID ?? "");
-  const iconName = coinIsFavorite ? "star" : "star-o";
+  const coinID = coin ? coin.id : undefined;
+  const coinName = coin ? coin.name : undefined;
+
+  const coinToFavorite = favoriteCoins.find(
+    (favoriteCoin) => favoriteCoin.id === coinID,
+  );
+  const total_supply = coinDetailedData
+    ? coinDetailedData.total_supply
+    : undefined;
+
+  const circulating_supply = coinDetailedData
+    ? coinDetailedData.circulating_supply
+    : undefined;
+
+  const iconName = coinToFavorite ? "star" : "star-o";
 
   const memoizedFetchMarketChart = useCallback(() => {
     if (!coinChartData && coinID) {
@@ -66,25 +78,24 @@ export function DetailsScreen({ navigation }: DetailedSreenProps) {
   }, [dispatch, coinID, coinDetailedData]);
 
   const changeFavoriteHandler = useCallback(() => {
-    if (!coinID) {
-      return null;
+    if (coin) {
+      if (!favoriteCoins.includes(coin)) {
+        dispatch(markFavorite(coin));
+        toast.show("This coin is now saved in your favorites tab.", {
+          type: "success",
+        });
+      } else {
+        dispatch(unmarkFavorite(coin.id));
+        toast.show("This coin is now removed from your favorites tab.", {
+          type: "danger",
+        });
+      }
     }
-    if (coinIsFavorite) {
-      toast.show("This coin is now removed from your favorites tab.", {
-        type: "danger",
-      });
-      dispatch(unmarkFavorite(coinID));
-    } else {
-      toast.show("This coin is now saved in your favorites tab.", {
-        type: "success",
-        style: { borderRadius: 15 },
-      });
-      dispatch(markFavorite(coinID));
-    }
-  }, [toast, coinIsFavorite, coinID, dispatch]);
+  }, [toast, favoriteCoins, coin, dispatch]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
+      title: coinName,
       headerRight: () => {
         return (
           <Pressable onPress={() => changeFavoriteHandler}>
@@ -93,19 +104,19 @@ export function DetailsScreen({ navigation }: DetailedSreenProps) {
         );
       },
     });
-  }, [coinIsFavorite, iconName, changeFavoriteHandler, navigation]);
+  }, [coinName, iconName, navigation, changeFavoriteHandler]);
 
   const memoizedFavoriteCoins = useCallback(() => {
-    if (coinID) {
+    if (coin) {
       navigation.setOptions({
         headerRight: () => (
-          <Pressable onPress={() => dispatch(markFavorite(coinID))}>
-            <Icon name="star-o" color="gray" />
+          <Pressable onPress={() => changeFavoriteHandler()}>
+            <Icon name={iconName} color="gray" />
           </Pressable>
         ),
       });
     }
-  }, [coinID, navigation, dispatch]);
+  }, [changeFavoriteHandler, coin, iconName, navigation]);
 
   useEffect(() => {
     memoizedFetchMarketChart();
@@ -120,7 +131,6 @@ export function DetailsScreen({ navigation }: DetailedSreenProps) {
       unsubscribe();
     };
   }, [
-    coinID,
     navigation,
     dispatch,
     memoizedFetchMarketChart,
@@ -174,14 +184,6 @@ export function DetailsScreen({ navigation }: DetailedSreenProps) {
     </View>
   );
 
-  if (!coinDetailedData) {
-    return null;
-  }
-
-  const total_supply = coinDetailedData.total_supply;
-
-  const circulating_supply = coinDetailedData.circulating_supply;
-
   return (
     <View style={styles.container}>
       <View style={styles.chartContainer}>
@@ -198,7 +200,7 @@ export function DetailsScreen({ navigation }: DetailedSreenProps) {
       <View />
       <View style={styles.marketDetailedDataContainer}>
         {detailedLoading ? <Text>Details are loading ... </Text> : null}
-        {detailedError ? <Text>{chartError}</Text> : null}
+        {detailedError ? <Text>{detailedError}</Text> : null}
 
         <View style={styles.flatListContainer}>
           <Text style={styles.flatListLabel}> Market Cap</Text>
