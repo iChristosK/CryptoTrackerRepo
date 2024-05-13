@@ -26,7 +26,7 @@ import {
 import {
   RootState,
   useTypedDispatch,
-  useTypedSelector,
+  useAppSelector,
 } from "../store/redux/store";
 import { convertKeyValueData } from "../utils/ConvertUtil";
 import { parseTimestampIntoDateMonthYear } from "../utils/DateUtil";
@@ -45,8 +45,8 @@ export function DetailsScreen({ navigation }: DetailedSreenProps) {
     chartLoading,
     detailedError,
     detailedLoading,
-  } = useTypedSelector((state: RootState) => state.coins);
-  const { favoriteCoins } = useTypedSelector(
+  } = useAppSelector((state: RootState) => state.coins);
+  const { favoriteCoins } = useAppSelector(
     (state: RootState) => state.favorites,
   );
   const coinID = coin ? coin.id : undefined;

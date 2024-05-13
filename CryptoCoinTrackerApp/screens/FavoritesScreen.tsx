@@ -7,15 +7,15 @@ import {
 } from "react-native";
 
 import { CoinView } from "../../CryptoCoinTrackerApp/components/CoinView/CoinView";
-import { RootState, useTypedSelector } from "../store/redux/store";
+import { RootState, useAppSelector } from "../store/redux/store";
 import { Coin } from "../types/Coin";
 
 export function FavoritesScreen() {
   const { width: screenWidth } = useWindowDimensions();
-  const favoriteCoins = useTypedSelector(
+  const favoriteCoins = useAppSelector(
     (state: RootState) => state.favorites.favoriteCoins,
   );
-  const { error } = useTypedSelector((state: RootState) => state.coins);
+  const { error } = useAppSelector((state: RootState) => state.coins);
 
   const renderItem = ({ item }: { item: Coin }) => <CoinView item={item} />;
 
