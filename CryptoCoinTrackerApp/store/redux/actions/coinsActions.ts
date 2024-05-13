@@ -1,3 +1,4 @@
+import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { Dispatch } from "redux";
 
@@ -45,34 +46,31 @@ export const selectCoin = (coin: Coin) => (dispatch: Dispatch) => {
   });
 };
 
-export const fetchCoins =
-  (currentPage: number = 1, coinsPerPage: number, searchTerm: string) =>
-  async (dispatch: Dispatch) => {
-    dispatch({
-      type: FETCH_COINS_REQUEST,
-    });
-
-    const queryParams = `?vs_currency=${CURRENCY_USD}&ids=${searchTerm}&page=${currentPage}&per_page=${coinsPerPage}&order=${MARKET_CAP_ORDER}&sparkline=${false}&locale=${LOCALE_EN}&price_change_percentage=${PRICE_CHANGE_PERCENTAGE_7D}&precision=${QUERY_PRECISION}`;
-    const coinsMarketsURL = `${API_BASE_URL}${MARKETS_ENDPOINT}${queryParams}`;
-
-    //api.coingecko.com/api/v3/coins/markets?ids=bitcoin&page=1&per_page=0&vs_currency=USD&order=market_cap_desc&sparkline=true&locale=en&price_change_percentage=7d&precision=2
+export const fetchCoins = createAsyncThunk(
+  "coins/fetchCoins",
+  async (
+    {
+      currentPage = 1,
+      coinsPerPage,
+      searchTerm,
+    }: { currentPage: number; coinsPerPage: number; searchTerm: string },
+    { rejectWithValue },
+  ) => {
     try {
+      const queryParams = `?vs_currency=${CURRENCY_USD}&ids=${searchTerm}&page=${currentPage}&per_page=${coinsPerPage}&order=${MARKET_CAP_ORDER}&sparkline=${false}&locale=${LOCALE_EN}&price_change_percentage=${PRICE_CHANGE_PERCENTAGE_7D}&precision=${QUERY_PRECISION}`;
+      const coinsMarketsURL = `${API_BASE_URL}${MARKETS_ENDPOINT}${queryParams}`;
       const response = await axios.get(coinsMarketsURL);
 
       if (response.status === SUCCESS_STATUS_REQUEST_CODE && response.data) {
-        const coins = response.data;
-        dispatch({
-          type: FETCH_COINS_REQUEST_SUCCESS,
-          payload: coins,
-        });
+        return response.data;
+      } else {
+        return rejectWithValue("Failed to fetch coins");
       }
     } catch (error) {
-      dispatch({
-        type: FETCH_COINS_REQUEST_FAILURE,
-        payload: error?.toString(),
-      });
+      return rejectWithValue(error?.toString());
     }
-  };
+  },
+);
 
 export const resetMarketChartData = () => (dispatch: Dispatch) => {
   dispatch({

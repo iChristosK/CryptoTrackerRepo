@@ -1,21 +1,8 @@
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+
 import { Coin, MarketData } from "../../../types/Coin";
 import { Pagination } from "../../../types/Pagination";
-import {
-  FETCH_COINS_REQUEST,
-  FETCH_COINS_REQUEST_FAILURE,
-  FETCH_COINS_REQUEST_SUCCESS,
-  FETCH_COIN_DETAILED_DATA,
-  FETCH_COIN_DETAILED_DATA_FAILURE,
-  FETCH_COIN_DETAILED_DATA_SUCCESS,
-  FETCH_COIN_MARKET_CHART_REQUEST,
-  FETCH_COIN_MARKET_CHART_REQUEST_FAILURE,
-  FETCH_COIN_MARKET_CHART_REQUEST_SUCCESS,
-  RESET_COINS,
-  RESET_COIN_DETAILED_DATA,
-  RESET_COIN_MARKET_CHART,
-  SELECT_COIN,
-  SET_PAGINATION,
-} from "../actions/types/types";
+import { fetchCoins } from "../actions/coinsActions";
 
 interface CoinsState {
   coin: Coin | null;
@@ -48,155 +35,97 @@ const initialState: CoinsState = {
   },
 };
 
-interface ResetMarketChartData {
-  type: typeof RESET_COIN_MARKET_CHART;
-}
+const coinsSlice = createSlice({
+  name: "coins",
+  initialState,
+  reducers: {
+    resetCoins(state) {
+      state.coins = [];
+    },
+    resetCoinMarketChart(state) {
+      state.coinChartData = null;
+    },
+    resetCoinDetailedData(state) {
+      state.coinDetailedData = null;
+    },
+    setPagination(state, action: PayloadAction<Pagination>) {
+      state.pagination = action.payload;
+    },
+    selectCoin(state, action: PayloadAction<Coin>) {
+      state.coin = action.payload;
+    },
+    fetchCoinDetailedDataRequest(state) {
+      state.detailedLoading = true;
+      state.detailedError = null;
+    },
+    fetchCoinDetailedDataRequestSuccess(
+      state,
+      action: PayloadAction<MarketData>,
+    ) {
+      state.coinDetailedData = action.payload;
+      state.detailedLoading = false;
+      state.detailedError = null;
+    },
+    fetchCoinDetailedDataRequestFailure(state, action: PayloadAction<string>) {
+      state.detailedError = action.payload;
+      state.detailedLoading = false;
+    },
+    fetchCoinMarketDataRequest(state) {
+      state.chartLoading = true;
+      state.chartError = null;
+    },
+    fetchCoinMarketDataRequestSuccess(
+      state,
+      action: PayloadAction<[number, number][]>,
+    ) {
+      state.coinChartData = action.payload;
+      state.chartLoading = false;
+      state.chartError = null;
+    },
+    fetchCoinMarketDataRequestFailure(state, action: PayloadAction<string>) {
+      state.chartError = action.payload;
+      state.chartLoading = false;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchCoins.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCoins.fulfilled, (state, action) => {
+        state.loading = false;
+        state.coins = action.payload;
+      })
+      .addCase(fetchCoins.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+    /**
+     * 
+        * Separation of Concerns: It allows you to separate the handling of actions that originate from outside the slice, such as async thunk actions created with createAsyncThunk, from the actions defined within the slice.
 
-interface ResetCoins {
-  type: typeof RESET_COINS;
-}
+        Centralized Logic: By centralizing the logic for handling additional actions in one place (extraReducers), you avoid scattering the logic across different parts of your codebase, making it easier to manage and maintain.
 
-interface ResetDetailedData {
-  type: typeof RESET_COIN_DETAILED_DATA;
-}
+        Avoiding Mutation: Redux Toolkit's createSlice uses Immer internally to enable writing immutable updates to state. extraReducers works seamlessly with Immer, ensuring that state updates are still immutable even when handling actions outside of the slice.
 
-interface SetPagination {
-  type: typeof SET_PAGINATION;
-  payload: Pagination;
-}
+        Type Safety: The builder function provides type checking for action types, ensuring that you handle each action type correctly and avoid typos or missing cases.
+     */
+  },
+});
 
-interface SelectCoin {
-  type: typeof SELECT_COIN;
-  payload: Coin;
-}
+export const {
+  resetCoins,
+  resetCoinMarketChart,
+  resetCoinDetailedData,
+  setPagination,
+  selectCoin,
+  fetchCoinDetailedDataRequest,
+  fetchCoinDetailedDataRequestSuccess,
+  fetchCoinDetailedDataRequestFailure,
+  fetchCoinMarketDataRequest,
+  fetchCoinMarketDataRequestSuccess,
+  fetchCoinMarketDataRequestFailure,
+} = coinsSlice.actions;
 
-interface FetchCoinsRequest {
-  type: typeof FETCH_COINS_REQUEST;
-}
-
-interface FetchCoinsRequestSuccess {
-  type: typeof FETCH_COINS_REQUEST_SUCCESS;
-  payload: Coin[];
-}
-
-interface FetchCoinsRequestFailure {
-  type: typeof FETCH_COINS_REQUEST_FAILURE;
-  payload: string;
-}
-
-interface FetchCoinMarketDataRequest {
-  type: typeof FETCH_COIN_MARKET_CHART_REQUEST;
-}
-
-interface FetchCoinMarketDataRequestSuccess {
-  type: typeof FETCH_COIN_MARKET_CHART_REQUEST_SUCCESS;
-  payload: [number, number][];
-}
-
-interface FetchCoinMarketDataRequestFailure {
-  type: typeof FETCH_COIN_MARKET_CHART_REQUEST_FAILURE;
-  payload: string;
-}
-
-interface FetchCoinDetailedDataRequest {
-  type: typeof FETCH_COIN_DETAILED_DATA;
-}
-
-interface FetchCoinDetailedDataRequestSuccess {
-  type: typeof FETCH_COIN_DETAILED_DATA_SUCCESS;
-  payload: MarketData;
-}
-
-interface FetchCoinDetailedDataRequestFailure {
-  type: typeof FETCH_COIN_DETAILED_DATA_FAILURE;
-  payload: string;
-}
-
-type CoinsReducerAction =
-  | ResetCoins
-  | ResetDetailedData
-  | ResetMarketChartData
-  | SetPagination
-  | SelectCoin
-  | FetchCoinsRequest
-  | FetchCoinsRequestSuccess
-  | FetchCoinsRequestFailure
-  | FetchCoinMarketDataRequest
-  | FetchCoinMarketDataRequestSuccess
-  | FetchCoinMarketDataRequestFailure
-  | FetchCoinDetailedDataRequest
-  | FetchCoinDetailedDataRequestSuccess
-  | FetchCoinDetailedDataRequestFailure;
-
-export function coinsReducer(state = initialState, action: CoinsReducerAction) {
-  switch (action.type) {
-    case RESET_COINS: {
-      const stateCoins = [...(state.coins ?? [])];
-      stateCoins.splice(0, stateCoins.length);
-      return { ...state, coins: stateCoins };
-    }
-    case RESET_COIN_MARKET_CHART: {
-      if (state.coinChartData) {
-        const newCoinsMarketData = null;
-        return { ...state, coinChartData: newCoinsMarketData };
-      }
-      return { ...state };
-    }
-    case RESET_COIN_DETAILED_DATA: {
-      if (state.coinDetailedData) {
-        const newCoinsDetailedData = null;
-        return { ...state, coinDetailedData: newCoinsDetailedData };
-      }
-      return { ...state };
-    }
-    case SET_PAGINATION: {
-      return { ...state, pagination: action.payload };
-    }
-    case SELECT_COIN:
-      return { ...state, coin: action.payload };
-    case FETCH_COINS_REQUEST:
-      return { ...state, loading: true, error: null };
-    case FETCH_COINS_REQUEST_SUCCESS: {
-      const stateCoins = [...(state.coins ?? [])];
-      const newCoins = action.payload.filter(
-        (coin) => !stateCoins.includes(coin),
-      );
-      return {
-        ...state,
-        coins: [...stateCoins, ...newCoins],
-        loading: false,
-        error: null,
-      };
-    }
-    case FETCH_COINS_REQUEST_FAILURE:
-      return { ...state, error: action.payload, loading: false };
-    case FETCH_COIN_DETAILED_DATA:
-      return { ...state, detailedLoading: true, detailedError: null };
-    case FETCH_COIN_DETAILED_DATA_SUCCESS:
-      return {
-        ...state,
-        coinDetailedData: action.payload,
-        detailedLoading: false,
-        detailedError: null,
-      };
-    case FETCH_COIN_DETAILED_DATA_FAILURE:
-      return {
-        ...state,
-        detailedError: action.payload,
-        detailedLoading: false,
-      };
-    case FETCH_COIN_MARKET_CHART_REQUEST:
-      return { ...state, chartLoading: true, chartError: null };
-    case FETCH_COIN_MARKET_CHART_REQUEST_SUCCESS:
-      return {
-        ...state,
-        coinChartData: action.payload,
-        chartLoading: false,
-        chartError: null,
-      };
-    case FETCH_COIN_MARKET_CHART_REQUEST_FAILURE:
-      return { ...state, chartError: action.payload, chartLoading: false };
-    default:
-      return state;
-  }
-}
+export const coinsReducer = coinsSlice.reducer;

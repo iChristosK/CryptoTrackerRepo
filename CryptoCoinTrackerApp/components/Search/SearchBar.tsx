@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
 });
 
 /**
- * Retrieves pagination data from the Redux store using custom hooks useTypedSelector.
+ * Retrieves pagination data from the Redux store using custom hooks useAppSelector.
 Renders a search bar with an icon, input field, and cancel button.
 Handles text input and search functionality using TextInput component.
 Dispatches actions to reset coins and fetch new coins based on search input and pagination.

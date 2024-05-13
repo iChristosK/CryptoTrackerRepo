@@ -21,8 +21,8 @@ import {
 } from "../store/redux/actions/coinsActions";
 import {
   RootState,
-  useTypedDispatch,
-  useTypedSelector,
+  useAppDispatch,
+  useAppSelector,
 } from "../store/redux/store";
 import { Coin } from "../types/Coin";
 
@@ -32,10 +32,10 @@ export function CoinsScreen({ navigation }: CoinsScreenProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchPhrase, setSearchPhrase] = useState("");
   const [clicked, setClicked] = useState(false);
-  const dispatch = useTypedDispatch();
+  const dispatch = useAppDispatch();
 
   const { width: screenWidth } = useWindowDimensions();
-  const { coins, loading, error, pagination } = useTypedSelector(
+  const { coins, loading, error, pagination } = useAppSelector(
     (state: RootState) => state.coins,
   );
   const renderItem = ({ item }: { item: Coin }) => (
@@ -56,7 +56,13 @@ export function CoinsScreen({ navigation }: CoinsScreenProps) {
     }
     setIsRefreshing(true);
     dispatch(resetCoins());
-    dispatch(fetchCoins(1, pagination.coinsPerPage, searchPhrase));
+    dispatch(
+      fetchCoins({
+        currentPage: pagination.page,
+        coinsPerPage: pagination.coinsPerPage,
+        searchTerm: searchPhrase,
+      }),
+    );
     setIsRefreshing(false);
   };
 
@@ -67,14 +73,24 @@ export function CoinsScreen({ navigation }: CoinsScreenProps) {
     };
     if (pagination.page < newPagination.page + 1) {
       dispatch(setPagination(newPagination));
-      fetchCoins(newPagination.page, pagination.coinsPerPage, searchPhrase);
+      dispatch(
+        fetchCoins({
+          currentPage: newPagination.page,
+          coinsPerPage: pagination.coinsPerPage,
+          searchTerm: searchPhrase,
+        }),
+      );
     }
   };
 
   const memoizedFetchCoins = useCallback(() => {
     if (!coins) {
       dispatch(
-        fetchCoins(pagination.page, pagination.coinsPerPage, searchPhrase),
+        fetchCoins({
+          currentPage: pagination.page,
+          coinsPerPage: pagination.coinsPerPage,
+          searchTerm: searchPhrase,
+        }),
       );
     }
   }, [dispatch, pagination, coins, searchPhrase]);
