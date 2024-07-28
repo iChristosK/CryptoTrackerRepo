@@ -19,11 +19,7 @@ import {
   selectCoin,
   setPagination,
 } from "../store/redux/actions/coinsActions";
-import {
-  RootState,
-  useAppDispatch,
-  useAppSelector,
-} from "../store/redux/store";
+import { useAppDispatch, useAppSelector } from "../store/redux/store";
 import { Coin } from "../types/Coin";
 
 type CoinsScreenProps = NativeStackScreenProps<RootStackParamList, "Coins">;
@@ -36,8 +32,9 @@ export function CoinsScreen({ navigation }: CoinsScreenProps) {
 
   const { width: screenWidth } = useWindowDimensions();
   const { coins, loading, error, pagination } = useAppSelector(
-    (state: RootState) => state.coins,
+    (state) => state.coins,
   );
+  //TODO: Use efficient/specified selectors
   const renderItem = ({ item }: { item: Coin }) => (
     <Pressable
       onPress={() => {
