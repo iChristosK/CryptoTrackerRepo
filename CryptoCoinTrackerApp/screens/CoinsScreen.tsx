@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
   Pressable,
@@ -13,12 +13,12 @@ import {
 import { CoinView } from "../../CryptoCoinTrackerApp/components/CoinView/CoinView";
 import { SearchBar } from "../components/Search/SearchBar";
 import { RootStackParamList } from "../navigation/stack/HomeStack";
+import { fetchCoins } from "../store/redux/actions/coinsActions";
 import {
-  fetchCoins,
   resetCoins,
   selectCoin,
   setPagination,
-} from "../store/redux/actions/coinsActions";
+} from "../store/redux/reducers/coinsReducer";
 import { useAppDispatch, useAppSelector } from "../store/redux/store";
 import { Coin } from "../types/Coin";
 

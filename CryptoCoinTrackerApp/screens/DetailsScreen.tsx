@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useEffect, useLayoutEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo } from "react";
 import {
   StyleSheet,
   View,
@@ -22,10 +22,10 @@ import {
 import {
   markFavorite,
   unmarkFavorite,
-} from "../store/redux/actions/favoriteActions";
+} from "../store/redux/reducers/favoritesReducer";
 import {
   RootState,
-  useTypedDispatch,
+  useAppDispatch,
   useAppSelector,
 } from "../store/redux/store";
 import { convertKeyValueData } from "../utils/ConvertUtil";
@@ -34,7 +34,7 @@ import { parseTimestampIntoDateMonthYear } from "../utils/DateUtil";
 type DetailedSreenProps = NativeStackScreenProps<RootStackParamList, "Details">;
 
 export function DetailsScreen({ navigation }: DetailedSreenProps) {
-  const dispatch = useTypedDispatch();
+  const dispatch = useAppDispatch();
   const { width: screenWidth } = useWindowDimensions();
   const toast = useToast();
   const {
