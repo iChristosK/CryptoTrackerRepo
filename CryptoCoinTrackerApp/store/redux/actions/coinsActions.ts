@@ -77,7 +77,7 @@ export const fetchCoinDetailedData = createAsyncThunk(
         return rejectWithValue("Failed to fetch market chart coin");
       }
     } catch (error) {
-      rejectWithValue(error?.toString());
+      return rejectWithValue(error?.toString());
     }
   },
 );

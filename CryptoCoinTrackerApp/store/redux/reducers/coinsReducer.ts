@@ -2,7 +2,11 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { Coin, MarketData } from "../../../types/Coin";
 import { Pagination } from "../../../types/Pagination";
-import { fetchCoins } from "../actions/coinsActions";
+import {
+  fetchCoinDetailedData,
+  fetchCoins,
+  fetchMarketChartByCoinID,
+} from "../actions/coinsActions";
 
 interface CoinsState {
   coin: Coin | null;
@@ -54,38 +58,6 @@ const coinsSlice = createSlice({
     selectCoin(state, action: PayloadAction<Coin>) {
       state.coin = action.payload;
     },
-    fetchCoinDetailedDataRequest(state) {
-      state.detailedLoading = true;
-      state.detailedError = null;
-    },
-    fetchCoinDetailedDataRequestSuccess(
-      state,
-      action: PayloadAction<MarketData>,
-    ) {
-      state.coinDetailedData = action.payload;
-      state.detailedLoading = false;
-      state.detailedError = null;
-    },
-    fetchCoinDetailedDataRequestFailure(state, action: PayloadAction<string>) {
-      state.detailedError = action.payload;
-      state.detailedLoading = false;
-    },
-    fetchCoinMarketDataRequest(state) {
-      state.chartLoading = true;
-      state.chartError = null;
-    },
-    fetchCoinMarketDataRequestSuccess(
-      state,
-      action: PayloadAction<[number, number][]>,
-    ) {
-      state.coinChartData = action.payload;
-      state.chartLoading = false;
-      state.chartError = null;
-    },
-    fetchCoinMarketDataRequestFailure(state, action: PayloadAction<string>) {
-      state.chartError = action.payload;
-      state.chartLoading = false;
-    },
   },
   extraReducers: (builder) => {
     builder
@@ -100,6 +72,38 @@ const coinsSlice = createSlice({
       .addCase(fetchCoins.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(fetchCoinDetailedData.pending, (state) => {
+        state.detailedLoading = true;
+        state.detailedError = null;
+      })
+      .addCase(
+        fetchCoinDetailedData.fulfilled,
+        (state, action: PayloadAction<MarketData>) => {
+          state.coinDetailedData = action.payload;
+          state.detailedLoading = false;
+          state.detailedError = null;
+        },
+      )
+      .addCase(fetchCoinDetailedData.rejected, (state, action) => {
+        state.detailedError = action.payload as string;
+        state.detailedLoading = false;
+      })
+      .addCase(fetchMarketChartByCoinID.pending, (state) => {
+        state.chartLoading = true;
+        state.chartError = null;
+      })
+      .addCase(
+        fetchMarketChartByCoinID.fulfilled,
+        (state, action: PayloadAction<[number, number][]>) => {
+          state.coinChartData = action.payload;
+          state.chartLoading = false;
+          state.chartError = null;
+        },
+      )
+      .addCase(fetchMarketChartByCoinID.rejected, (state, action) => {
+        state.chartError = action.payload as string;
+        state.chartLoading = false;
       });
     /**
      * 
@@ -120,12 +124,6 @@ export const {
   resetCoinDetailedData,
   setPagination,
   selectCoin,
-  fetchCoinDetailedDataRequest,
-  fetchCoinDetailedDataRequestSuccess,
-  fetchCoinDetailedDataRequestFailure,
-  fetchCoinMarketDataRequest,
-  fetchCoinMarketDataRequestSuccess,
-  fetchCoinMarketDataRequestFailure,
 } = coinsSlice.actions;
 
 export const coinsReducer = coinsSlice.reducer;
