@@ -2,8 +2,9 @@ import { Feather } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, TextInput, View, Keyboard, Button } from "react-native";
 
-import { fetchCoins, resetCoins } from "../../store/redux/actions/coinsActions";
-import { useTypedDispatch } from "../../store/redux/store";
+import { fetchCoins } from "../../store/redux/actions/coinsActions";
+import { resetCoins } from "../../store/redux/reducers/coinsReducer";
+import { useAppDispatch } from "../../store/redux/store";
 
 interface SearchBarProps {
   searchPhrase: string;
@@ -12,7 +13,7 @@ interface SearchBarProps {
   setClicked: (clicked: boolean) => void;
 }
 export const SearchBar = (props: SearchBarProps) => {
-  const dispatch = useTypedDispatch();
+  const dispatch = useAppDispatch();
   return (
     <View style={styles.container}>
       <View
@@ -37,7 +38,13 @@ export const SearchBar = (props: SearchBarProps) => {
             dispatch(resetCoins());
           }}
           onSubmitEditing={() => {
-            dispatch(fetchCoins(1, 1, props.searchPhrase));
+            dispatch(
+              fetchCoins({
+                currentPage: 1,
+                coinsPerPage: 1,
+                searchTerm: props.searchPhrase,
+              }),
+            );
           }}
           onFocus={() => {
             props.setClicked(true);
@@ -50,7 +57,13 @@ export const SearchBar = (props: SearchBarProps) => {
             title="Cancel"
             onPress={() => {
               dispatch(resetCoins());
-              dispatch(fetchCoins(1, 100, ""));
+              dispatch(
+                fetchCoins({
+                  currentPage: 1,
+                  coinsPerPage: 100,
+                  searchTerm: "",
+                }),
+              );
               props.setSearchPhrase("");
               Keyboard.dismiss();
               props.setClicked(false);

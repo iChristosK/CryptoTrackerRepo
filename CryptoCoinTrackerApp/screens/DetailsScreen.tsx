@@ -16,9 +16,11 @@ import { RootStackParamList } from "../navigation/stack/HomeStack";
 import {
   fetchCoinDetailedData,
   fetchMarketChartByCoinID,
-  resetDetailedData,
-  resetMarketChartData,
 } from "../store/redux/actions/coinsActions";
+import {
+  resetCoinDetailedData,
+  resetCoinMarketChart,
+} from "../store/redux/reducers/coinsReducer";
 import {
   markFavorite,
   unmarkFavorite,
@@ -124,8 +126,8 @@ export function DetailsScreen({ navigation }: DetailedSreenProps) {
     memoizedFavoriteCoins();
 
     const unsubscribe = navigation.addListener("beforeRemove", () => {
-      dispatch(resetMarketChartData());
-      dispatch(resetDetailedData());
+      dispatch(resetCoinMarketChart());
+      dispatch(resetCoinDetailedData());
     });
     return () => {
       unsubscribe();
